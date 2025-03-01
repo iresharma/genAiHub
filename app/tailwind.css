@@ -10,3 +10,65 @@ body {
     color-scheme: dark;
   }
 }
+
+.chat-bg {
+  background-color: #0d0818;
+  opacity: 1;
+  background-image:  radial-gradient(#ad94ef 1px, transparent 1px), radial-gradient(#ad94ef 1px, #0d0818 1px);
+  background-size: 60px 60px;
+  background-position: 0 0,30px 30px;
+}
+
+@layer base {
+  :root {
+    /* CSS: .bg-gradient { background: var(--gradient) } */
+    --gradient: linear-gradient(to top left, #9796f0, #fbc7d4);
+
+    --background: 256 48.75% 6.08%;
+    --foreground: 256 7.5% 98.8%;
+
+    --muted: 256 37.5% 22.8%;
+    --muted-foreground: 256 7.5% 57.6%;
+
+    --popover: 256 50% 9.88%;
+    --popover-foreground: 256 7.5% 98.8%;
+
+    --card: 256 50% 9.88%;
+    --card-foreground: 256 7.5% 98.8%;
+
+    --border: 256 37.5% 22.8%;
+    --input: 256 67.5% 22.8%;
+
+    --primary: 256 75% 76%;
+    --primary-foreground: 256 7.5% 7.6%;
+
+    --secondary: 256 37.5% 22.8%;
+    --secondary-foreground: 256 7.5% 98.8%;
+
+    --accent: 256 37.5% 22.8%;
+    --accent-foreground: 256 7.5% 98.8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 256 7.5% 98.8%;
+
+    --ring: 256 75% 76%;
+
+    /* sidebar styles */
+    --sidebar-background: 256 50% 9.88%;
+    --sidebar-foreground: 256 7.5% 98.8%;
+    --sidebar-primary: 256 75% 76%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 256 75% 76%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

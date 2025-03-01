@@ -1,3 +1,5 @@
+import { rootAuthLoader } from "@clerk/remix/ssr.server";
+import { ClerkApp } from "@clerk/remix";
 import {
   Links,
   Meta,
@@ -5,7 +7,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import type { LinksFunction } from "@remix-run/node";
+import type { DataFunctionArgs, LinksFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 
@@ -22,9 +24,11 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export const loader = (args: DataFunctionArgs) => rootAuthLoader(args);
+
+function App() {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" style={{ background: "#030712" }}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -40,6 +44,4 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  return <Outlet />;
-}
+export default ClerkApp(App);
