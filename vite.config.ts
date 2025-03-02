@@ -18,6 +18,7 @@ export default defineConfig({
         v3_singleFetch: true,
         v3_lazyRouteDiscovery: true,
       },
+      serverModuleFormat: "esm",
     }),
     tsconfigPaths(),
   ],
@@ -25,8 +26,24 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        sourcemapExcludeSources: true
-      }
-    }
-  }
+        sourcemapExcludeSources: true,
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@radix-ui')) {
+              return 'ui';
+            }
+            if (id.includes('react') || id.includes('@clerk/remix')) {
+              return 'vendor';
+            }
+            if (id.includes('onnxruntime-web')) {
+              return 'onnx';
+            }
+            if (id.includes('@imgly/background-removal-node')) {
+              return 'imgProcessing';
+            }
+          }
+        }
+      },
+    },
+  },
 });
