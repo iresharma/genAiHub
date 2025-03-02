@@ -4,13 +4,15 @@ import { MessageList } from "~/components/chat/message-list";
 import { ChatInput } from "~/components/chat/chat-input";
 import { Message } from "~/components/chat/types";
 import { Badge } from "~/components/ui/badge";
-import { allProducts } from "./products";
 import { Input } from "~/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { useLoaderData } from "@remix-run/react";
 
 export function ProductPosts() {
-  const [selectedProduct, setSelectedProduct] = useState<typeof allProducts[0] | null>(null);
+  const loaderData = useLoaderData<{ products: any[] }>();
+  const products = loaderData?.products || [];
+  const [selectedProduct, setSelectedProduct] = useState<typeof products[0] | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
         id: (Date.now() + 1).toString(),
@@ -24,10 +26,10 @@ export function ProductPosts() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredProducts = allProducts.filter(product =>
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.badges.some(badge => badge.toLowerCase().includes(searchQuery.toLowerCase()))
+    (product.badges && product.badges.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +65,7 @@ export function ProductPosts() {
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: "This is a mock AI response about " + selectedProduct.name,
+        content: "This is a mock AI response about " + selectedProduct?.name,
         role: "assistant",
         timestamp: new Date(),
         type: "prompt",
@@ -98,90 +100,64 @@ export function ProductPosts() {
       </div>
 
       {!selectedProduct ? (
-        <>
-          {/* Search Bar */}
-          <div className="mt-4 mb-3 relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 rounded-xl"
-              />
-            </div>
+        <div className="mt-8 grid gap-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-
-          {/* Product Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pb-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => (
               <Card
                 key={product.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="cursor-pointer transition-all hover:bg-accent"
                 onClick={() => setSelectedProduct(product)}
               >
-                <CardContent className="p-4 flex gap-4">
-                  <img
-                    src={product.image || "/placeholder.svg"}
-                    alt={product.name}
-                    className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                  />
-                  <div className="flex-grow min-w-0">
-                    <h3 className="font-semibold text-sm mb-2 truncate">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                      {product.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {product.badges.map((badge) => (
-                        <Badge key={badge} variant="secondary" className="rounded-xl text-xs px-2 py-0.5">
-                          {badge}
-                        </Badge>
-                      ))}
+                <CardContent className="p-6 flex gap-4">
+                  {product.productImage && (
+                    <div className="flex-shrink-0">
+                      <img
+                        src={product.productImage}
+                        alt={product.name}
+                        className="w-32 h-32 object-contain rounded-lg"
+                      />
                     </div>
+                  )}
+                  <div className="flex flex-col justify-between flex-grow">
+                    <div className="space-y-1">
+                      <h3 className="font-semibold">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {product.description}
+                      </p>
+                    </div>
+                    {product.badges && (
+                      <div className="mt-2">
+                        <Badge variant="secondary">{product.badges}</Badge>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </>
+        </div>
       ) : (
-        <>
-          {/* Product Information Card */}
-          <Card className="mb-4 mt-4">
-            <CardContent className="flex items-start gap-4 p-4">
-              <img
-                src={selectedProduct.image || "/placeholder.svg"}
-                alt={selectedProduct.name}
-                className="w-24 h-24 rounded-xl object-cover shadow-xl"
-              />
-              <div className="flex-grow">
-                <h2 className="text-xl font-bold mb-2">{selectedProduct.name}</h2>
-                <p className="text-muted-foreground mb-2">{selectedProduct.description}</p>
-                <div className="flex flex-wrap gap-1">
-                  {selectedProduct.badges.map((badge) => (
-                    <Badge key={badge} variant="secondary" className="rounded-xl">
-                      {badge}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Chat Interface */}
-          <Card className="flex-grow overflow-hidden flex flex-col">
-            <CardContent className="flex-grow overflow-hidden flex flex-col">
-              <MessageList messages={messages} />
-              <ChatInput
-                input={input}
-                imagePreview={imagePreview}
-                onInputChange={setInput}
-                onImageChange={handleImageChange}
-                onSubmit={handleSubmit}
-              />
-            </CardContent>
-          </Card>
-        </>
+        <div className="flex h-full flex-col">
+          <div className="flex-1 space-y-4 overflow-auto p-4">
+            <MessageList messages={messages} />
+          </div>
+          <ChatInput
+            input={input}
+            imagePreview={imagePreview}
+            onInputChange={setInput}
+            onImageChange={handleImageChange}
+            onSubmit={handleSubmit}
+          />
+        </div>
       )}
     </main>
   );

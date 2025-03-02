@@ -1,0 +1,12 @@
+{
+  "version": "5",
+  "tableId": "0",
+  "timestamp": 1710000000000,
+  "entries": [
+    {
+      "id": 0,
+      "checksum": "0000_initial",
+      "executedAt": "2024-03-10T00:00:00.000Z"
+    }
+  ]
+}

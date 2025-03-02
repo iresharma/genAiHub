@@ -28,124 +28,49 @@ import {
 } from "~/components/ui/table";
 import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
 import { Link } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 
-// Sample product data - replace with your actual data
-export const allProducts = [
-  {
-    id: 1,
-    name: "Modern Desk Lamp",
-    description:
-      "Sleek, adjustable desk lamp with LED lighting and touch controls.",
-    prompt: "Office essentials",
-    badges: ["New", "Featured"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 2,
-    name: "Wireless Earbuds",
-    description:
-      "Premium sound quality with noise cancellation and long battery life.",
-    prompt: "Audio devices",
-    badges: ["Sale", "Popular"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 3,
-    name: "Smart Watch",
-    description:
-      "Track fitness, receive notifications, and monitor health metrics.",
-    prompt: "Wearable tech",
-    badges: ["Limited"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 4,
-    name: "Ergonomic Chair",
-    description:
-      "Comfortable office chair with lumbar support and adjustable features.",
-    prompt: "Office furniture",
-    badges: ["Featured"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 5,
-    name: "Portable Charger",
-    description:
-      "High-capacity power bank for charging multiple devices on the go.",
-    prompt: "Mobile accessories",
-    badges: ["New", "Sale"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 6,
-    name: "Bluetooth Speaker",
-    description: "Waterproof speaker with 360° sound and 20-hour battery life.",
-    prompt: "Audio devices",
-    badges: ["Popular"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 7,
-    name: "Mechanical Keyboard",
-    description: "Tactile typing experience with customizable RGB lighting.",
-    prompt: "Computer peripherals",
-    badges: ["New"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 8,
-    name: "Wireless Mouse",
-    description:
-      "Ergonomic design with precision tracking and long battery life.",
-    prompt: "Computer peripherals",
-    badges: ["Sale"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 9,
-    name: "Coffee Maker",
-    description: "Programmable coffee machine with built-in grinder.",
-    prompt: "Kitchen appliances",
-    badges: ["Featured", "Limited"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-  {
-    id: 10,
-    name: "Air Purifier",
-    description:
-      "HEPA filter system that removes 99.97% of airborne particles.",
-    prompt: "Home appliances",
-    badges: ["New", "Featured"],
-    image:
-      "https://thefoomer.in/cdn/shop/products/PATP2846-min.jpg?v=1707384300",
-  },
-];
+type LoaderData = {
+  products: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    badges: string;
+    productImage: string;
+  }[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+};
 
 export function ProductList() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 5;
+  const { products, pagination } = useLoaderData<LoaderData>();
+  const [currentPage, setCurrentPage] = useState(pagination.currentPage);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Calculate pagination
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = allProducts.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-  const totalPages = Math.ceil(allProducts.length / productsPerPage);
+  // Parse badges from string to array
+  const productsWithParsedBadges = products.map(product => ({
+    ...product,
+    badges: product.badges.split(',').map(badge => badge.trim()),
+    image: product.productImage
+  }));
 
   // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handlePageChange = async (page: number) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/products?page=${page}&limit=${pagination.itemsPerPage}`);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      window.location.href = `/app/products?page=${page}&limit=${pagination.itemsPerPage}`;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -165,19 +90,19 @@ export function ProductList() {
           </Link>
         </div>
       </div>
-      <div className="rounded-md border w-full">
+      <div className="rounded-xl border w-full">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">Image</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Prompt</TableHead>
+              <TableHead className="hidden md:table-cell">Description</TableHead>
               <TableHead>Badges</TableHead>
               <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentProducts.map((product) => (
+            {productsWithParsedBadges.map((product) => (
               <TableRow key={product.id}>
                 <TableCell>
                   <img
@@ -251,13 +176,13 @@ export function ProductList() {
             />
           </PaginationItem>
 
-          {Array.from({ length: totalPages }).map((_, index) => {
+          {Array.from({ length: pagination.totalPages }).map((_, index) => {
             const page = index + 1;
 
             // Show first page, current page, last page, and pages around current
             if (
               page === 1 ||
-              page === totalPages ||
+              page === pagination.totalPages ||
               (page >= currentPage - 1 && page <= currentPage + 1)
             ) {
               return (
@@ -273,7 +198,7 @@ export function ProductList() {
             }
 
             // Show ellipsis for gaps
-            if (page === 2 || page === totalPages - 1) {
+            if (page === 2 || page === pagination.totalPages - 1) {
               return (
                 <PaginationItem key={page}>
                   <PaginationEllipsis />
@@ -287,10 +212,10 @@ export function ProductList() {
           <PaginationItem>
             <PaginationNext
               onClick={() =>
-                currentPage < totalPages && handlePageChange(currentPage + 1)
+                currentPage < pagination.totalPages && handlePageChange(currentPage + 1)
               }
               className={
-                currentPage === totalPages
+                currentPage === pagination.totalPages
                   ? "pointer-events-none opacity-50"
                   : "cursor-pointer"
               }

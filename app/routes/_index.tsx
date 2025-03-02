@@ -7,25 +7,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-import { SignInButton, SignUpButton } from "@clerk/remix";
-
-import { redirect } from "@remix-run/node";
-import { getAuth } from "@clerk/remix/ssr.server";
-
-export async function loader(args: LoaderFunctionArgs) {
-  const { userId } = await getAuth(args);
-  
-  // If user is authenticated, redirect to /app
-  if (userId) {
-    return redirect("/app");
-  }
-  
-  // Otherwise return null to render the login page
-  return null;
-}
-
+import { SignInButton, SignUpButton, useUser } from "@clerk/remix";
+import { Button } from "~/components/ui/button";
+import { Link } from "@remix-run/react";
 
 export default function Index() {
+  const { user } = useUser();
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-8">
       <div className="w-full max-w-md mx-auto bg-card rounded-xl shadow-lg p-8 border border-border">
@@ -46,7 +33,13 @@ export default function Index() {
             />
           </div>
           <div className="flex gap-3 justify-center">
-            <SignInButton mode="redirect" forceRedirectUrl="/app">
+            {user && <p>
+              Welcome {user.firstName}!
+              <Link to="/app">
+                <Button>Dashboard</Button>
+              </Link>
+            </p>}
+            {!user && <><SignInButton mode="redirect" forceRedirectUrl="/app">
               <button className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-base">
                 Sign In
               </button>
@@ -55,7 +48,7 @@ export default function Index() {
               <button className="px-6 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors font-medium text-base">
                 Sign Up
               </button>
-            </SignUpButton>
+            </SignUpButton></>}
           </div>
         </div>
       </div>

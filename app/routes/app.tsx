@@ -10,7 +10,6 @@ export const meta: MetaFunction = () => {
 };
 
 export default function App() {
-
   return (
     <div className="grid grid-cols-6 h-screen bg-background">
       <AppSideBar />

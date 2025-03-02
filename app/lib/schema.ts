@@ -19,6 +19,7 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   category: text("category").notNull(),
   badges: text("badges").notNull().default(""),
+  productImage: text("productimage").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
