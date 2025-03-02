@@ -26,7 +26,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        sourcemapExcludeSources: true,
+        sourcemapExcludeSources: false,
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('@radix-ui')) {
